@@ -1,47 +1,36 @@
-from openai import OpenAI, AssistantEventHandler
-from openai.types.beta.threads import Text, TextDelta
+from openai import OpenAI, Stream
 import streamlit as st
-from Constants import *
-from openai.types.beta.assistant_stream_event import ThreadMessageDelta
+from streamlit.delta_generator import DeltaGenerator
+from openai.types.beta.assistant_stream_event import ThreadMessageDelta, AssistantStreamEvent
 from openai.types.beta.threads.text_delta_block import TextDeltaBlock 
 
-client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
-assistant_id = st.secrets["ASSISTANT_ID"]
+client: OpenAI = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+assistant_id: str = st.secrets["ASSISTANT_ID"]
 
-thread = client.beta.threads.create()
+def process_query() -> None:
 
-if "chat_history" not in st.session_state:
-        st.session_state.chat_history = []
-
-for message in st.session_state.chat_history:
-        with st.chat_message(message["role"]):
-                st.markdown(message["content"])
-
-
-if user_query := st.chat_input("Escribe aquí tu consulta"):
+        for message in st.session_state.chat_history:
+                with st.chat_message(message["role"]):
+                        st.markdown(message["content"])
 
         with st.chat_message("user"):
-                st.markdown(user_query)
-
-        client.beta.threads.messages.create(
-                thread_id=thread.id,
-                role="user",
-                content=user_query
-        )
+                st.markdown(st.session_state.user_query)
 
         st.session_state.chat_history.append({
                 "role": "user",
-                "content": user_query
+                "content": st.session_state.user_query
         })
 
         with st.chat_message("assistant"):
-                stream = client.beta.threads.runs.create(
-                        thread_id=thread.id,
+                stream: Stream = client.beta.threads.create_and_run(
+                        thread={
+                                "messages": st.session_state.chat_history
+                        },
                         assistant_id=assistant_id,
                         stream=True
                 )
-                assistant_reply_box = st.empty()
-                assistant_reply = ""
+                assistant_reply_box: DeltaGenerator = st.empty()
+                assistant_reply: str = ""
 
                 for event in stream:
                         if isinstance(event, ThreadMessageDelta):
@@ -57,6 +46,22 @@ if user_query := st.chat_input("Escribe aquí tu consulta"):
                         "role": "assistant",
                         "content": assistant_reply
                 })
+
+
+def main() -> None:
+        if "chat_history" not in st.session_state:
+                st.session_state.chat_history = []
+
+        st.chat_input(
+                "Escribe aquí tu consulta", 
+                key="user_query",
+                on_submit=process_query
+        )
+
+if __name__ == "__main__":
+        main()
+
+        
                 
 
 
