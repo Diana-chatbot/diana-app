@@ -1,12 +1,33 @@
 from openai import OpenAI, Stream
+from pymongo.database import Database
+from pymongo.collection import Collection
 import streamlit as st
 from streamlit.delta_generator import DeltaGenerator
 from openai.types.beta.assistant_stream_event import ThreadMessageDelta, AssistantStreamEvent, ThreadRunFailed
 from openai.types.beta.threads.text_delta_block import TextDeltaBlock 
 from token_counting import ensure_fit_tokens
+import pymongo
+from uuid import uuid4
+from datetime import datetime, timezone
 
 client: OpenAI = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 assistant_id: str = st.secrets["ASSISTANT_ID"]
+mongo_client: pymongo.MongoClient = pymongo.MongoClient(st.secrets["MONGODB_CONNECTION_STRING"])
+mongo_db: Database = mongo_client.get_database(name = "session_events")
+msg_collection: Collection = mongo_db.get_collection(name = "messages")
+
+def insert_messages(messages: list[dict[str, str]]) -> None:
+        insert_time: datetime = datetime.now(timezone.utc)
+        messages_with_metadata: list[dict[str, str]] = []
+        for message in messages:
+                temp: dict[str, str] = {}
+                temp.update(message)
+                temp.update({
+                        "time": f"{insert_time.year}-{insert_time.month}-{insert_time.day} {insert_time.hour}:{insert_time.minute}:{insert_time.second}.{insert_time.microsecond}+00",
+                        "session_id": st.session_state.session_id
+                })
+                messages_with_metadata.append(temp)
+        msg_collection.insert_many(messages_with_metadata)
 
 def process_query() -> None:
 
@@ -62,9 +83,13 @@ def process_query() -> None:
                         "role": "assistant",
                         "content": assistant_reply
                 })
+        insert_messages(st.session_state.chat_history[-2:])
+        
 
 
 def main() -> None:
+        if "session_id" not in st.session_state:
+                st.session_state.session_id = str(uuid4())
         if "memory" not in st.session_state:
                 st.session_state.memory = []
         if "chat_history" not in st.session_state:
