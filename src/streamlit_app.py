@@ -32,10 +32,10 @@ def insert_messages(messages: list[dict[str, str]]) -> None:
 def process_query() -> None:
 
         for message in st.session_state.chat_history:
-                with st.chat_message(message["role"]):
+                with st.chat_message(message["role"], avatar = f"assets/avatar_{message['role']}.png"):
                         st.markdown(message["content"])
 
-        with st.chat_message("user"):
+        with st.chat_message("user", avatar = "assets/avatar_user.png"):
                 st.markdown(st.session_state.user_query)
 
         st.session_state.chat_history.append({
@@ -50,7 +50,7 @@ def process_query() -> None:
 
         ensure_fit_tokens(st.session_state.memory)
 
-        with st.chat_message("assistant"):
+        with st.chat_message("assistant", avatar="assets/avatar_assistant.png"):
                 stream: Stream = client.beta.threads.create_and_run(
                         thread={
                                 "messages": st.session_state.memory
