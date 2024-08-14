@@ -23,12 +23,12 @@ def num_tokens_from_messages(messages):
         return num_tokens
 
 def ensure_fit_tokens(messages, max_tokens:int = int(1.25e+5)):
-    """
-    Ensure that total tokens in messages is less than MAX_TOKENS.
-    If not, remove oldest messages until it fits.
-    """
-    total_tokens = num_tokens_from_messages(messages)
-
-    while total_tokens > max_tokens:
-        messages.pop(0)
+        """
+        Ensure that total tokens in messages is less than MAX_TOKENS.
+        If not, remove oldest messages until it fits.
+        """
         total_tokens = num_tokens_from_messages(messages)
+
+        while total_tokens > max_tokens:
+                messages.pop(1)
+                total_tokens = num_tokens_from_messages(messages)
