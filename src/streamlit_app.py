@@ -5,12 +5,15 @@ import streamlit as st
 from token_counting import ensure_fit_tokens
 from message_generation import add_context_to_query, generate_message
 from Constants import SYSTEM_PROMPT
+import nltk
 
 openai_client: OpenAI = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 sparse_encoder: BM25Encoder = BM25Encoder(language = "spanish")
 sparse_encoder.load("weights/sparse_params.json")
 pinecone_client: Pinecone = Pinecone(st.secrets["PINECONE_API_KEY"])
 corpus_index: Index = pinecone_client.Index(host = st.secrets["DIANACORPUS_HOST"])
+
+nltk.download("punkt_tab")
 
 def render_messages() -> None:
         for message in st.session_state.chat_history:
