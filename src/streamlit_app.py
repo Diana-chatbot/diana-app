@@ -48,11 +48,11 @@ def respond_to_query() -> None:
                 corpus_index, temperature = .7
         )
         st.session_state.chat_history.append(response)
+        st.session_state.memory.append(response)
         
         with st.chat_message("assistant", avatar = "assets/avatar_assistant.png"):
                 st.markdown(st.session_state.chat_history[-1]["content"])
         
-        st.session_state.memory[1:] = st.session_state.chat_history.copy()
         return
 
 def main() -> None:
