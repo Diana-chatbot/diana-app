@@ -33,11 +33,12 @@ def render_messages() -> None:
 
 def respond_to_query() -> None:
         render_messages()
+        current_query: str = st.session_state.user_query
         st.session_state.chat_history.append({
                 "role": "user",
-                "content": st.session_state.user_query
+                "content": current_query
         })
-        st.session_state.memory.append(st.session_state.chat_history[-1])
+        st.session_state.memory.append(st.session_state.chat_history.copy()[-1])
         ensure_fit_tokens(st.session_state.memory)
         response: dict[str, str] = generate_message(
                 st.session_state.memory, openai_client, sparse_encoder,

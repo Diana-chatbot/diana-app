@@ -115,7 +115,7 @@ def generate_message(
                 query_with_context[0]["content"] = HOSPITALS_AND_ORGS_PROMPT
                 api_response: ChatCompletion = llm_client.chat.completions.create(
                         messages = query_with_context, # type:ignore
-                        model = "gpt-4o-mini",
+                        model = "ft:gpt-4o-mini-2024-07-18:chakakuna:diana-finetuning-3:A9xprQbz:ckpt-step-1638",
                         temperature = temperature
                 )
                 response: str = api_response.choices[0].message.content #type:ignore
