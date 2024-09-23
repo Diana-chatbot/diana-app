@@ -41,7 +41,7 @@ def respond_to_query() -> None:
         ensure_fit_tokens(st.session_state.memory)
         response: dict[str, str] = generate_message(
                 st.session_state.memory, openai_client, sparse_encoder,
-                corpus_index, temperature = .7
+                corpus_index, temperature = .5
         )
         st.session_state.chat_history.append(response)
         
