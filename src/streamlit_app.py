@@ -38,7 +38,10 @@ def respond_to_query() -> None:
                 "role": "user",
                 "content": current_query
         })
-        st.session_state.memory.append(st.session_state.chat_history.copy()[-1])
+        st.session_state.memory.append({
+                "role": "user",
+                "content": current_query
+        })
         ensure_fit_tokens(st.session_state.memory)
         response: dict[str, str] = generate_message(
                 st.session_state.memory, openai_client, sparse_encoder,
@@ -49,7 +52,7 @@ def respond_to_query() -> None:
         with st.chat_message("assistant", avatar = "assets/avatar_assistant.png"):
                 st.markdown(st.session_state.chat_history[-1]["content"])
         
-        st.session_state.memory[-2:] = st.session_state.chat_history[-2:]
+        st.session_state.memory[1:] = st.session_state.chat_history[1:].copy()
         return
 
 def main() -> None:
