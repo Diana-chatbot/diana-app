@@ -12,7 +12,7 @@ def rephrase_query(messages: list[dict[str, str]], client: OpenAI) -> str:
         ]
         response: str = client.chat.completions.create(
                 messages = rephrase_messages, #type:ignore
-                model = "gpt-4o-mini"
+                model = "gpt-4o-mini", top_p = .9
         ).choices[0].message.content
         return response
 
@@ -69,7 +69,8 @@ def assess_sources_needed(messages: list[dict[str, str]], llm_client: OpenAI) ->
         ]
         response: str = llm_client.chat.completions.create(
                 messages = assessment_messages, # type:ignore
-                model = "gpt-4o-mini"
+                model = "gpt-4o-mini",
+                top_p = .4
         ).choices[0].message.content
         flag: bool = (response == "True") or ("True" in response)
         return flag
@@ -106,7 +107,8 @@ def generate_message(
                 llm_client: OpenAI,
                 sparse_encoder: BM25Encoder,
                 document_index: Index,
-                temperature: float = .8
+                temperature: float = 1.,
+                top_p: float = .5
 ) -> dict[str, str]:
         if assess_sources_needed(messages, llm_client):
                 query_with_context: list[dict[str, str]] = add_context_to_query(
@@ -116,7 +118,8 @@ def generate_message(
                 api_response: ChatCompletion = llm_client.chat.completions.create(
                         messages = query_with_context, # type:ignore
                         model = "ft:gpt-4o-mini-2024-07-18:chakakuna:diana-finetuning-3:A9xprQbz:ckpt-step-1638",
-                        temperature = temperature
+                        temperature = temperature,
+                        top_p = top_p
                 )
                 response: str = api_response.choices[0].message.content #type:ignore
                 return {"role": "assistant", "content": response}
@@ -124,7 +127,8 @@ def generate_message(
         api_response: ChatCompletion = llm_client.chat.completions.create(
                 messages = messages, # type:ignore
                 model = "ft:gpt-4o-mini-2024-07-18:chakakuna:diana-finetuning-3:A9xprQbz:ckpt-step-1638",
-                temperature = temperature
+                temperature = temperature,
+                top_p = top_p
         )
         response: str = api_response.choices[0].message.content # type:ignore
         return {"role": "assistant", "content": response}
