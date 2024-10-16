@@ -74,7 +74,7 @@ def respond_to_query() -> None:
         with st.chat_message("assistant", avatar = "assets/avatar_assistant.png"):
                 st.markdown(st.session_state.chat_history[-1]["content"])
         
-        insert_messages(st.session_state.chat_history.append[-2:])
+        insert_messages(st.session_state.chat_history[-2:])
         
         return
 
